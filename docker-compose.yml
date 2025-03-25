@@ -1,0 +1,46 @@
+services:
+
+
+  is_db:
+    container_name: is_db
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234567890
+      - POSTGRES_DB=postgres
+    ports:
+      - 5433:5432
+
+
+  is_auth_backend:
+    build: ./is_auth_backend
+    # environment:
+    #   HOST: "localhost"
+    #   NAME: "postgres"
+    #   USER: "postgres"
+    #   PASSWORD: "1234567890"
+    #   PORT: "5432"
+    env_file: 
+      - ./.env
+    ports:
+      - 8000:8000
+    container_name: is_auth_backend
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - ./is_auth_backend:/home/app
+    depends_on:
+      - is_db
+
+  is_image_backend:
+    build: ./is_image_backend
+    env_file: 
+      - ./.env
+    ports:
+      - 8001:8000
+    container_name: is_image_backend
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - ./is_image_backend:/home/app
+    depends_on:
+      - is_db
+      - is_auth_backend
